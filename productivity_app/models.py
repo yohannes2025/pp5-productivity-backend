@@ -22,3 +22,37 @@ def create_profile(sender, instance, created, **kwargs):
 
 
 post_save.connect(create_profile, sender=User)
+
+
+class Task(models.Model):
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+    CATEGORY_CHOICES = [
+        ('development', 'Development'),
+        ('design', 'Design'),
+        ('testing', 'Testing'),
+        ('documentation', 'Documentation'),
+        ('other', 'Other'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('done', 'Done'),
+    ]
+
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
+    category = models.CharField(
+        max_length=100, choices=CATEGORY_CHOICES, blank=True, null=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='pending')
+    assigned_users = models.ManyToManyField(
+        User, related_name='assigned_tasks')
+
+    def __str__(self):
+        return self.title
