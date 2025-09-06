@@ -2,6 +2,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -53,6 +55,14 @@ class Task(models.Model):
         max_length=20, choices=STATUS_CHOICES, default='pending')
     assigned_users = models.ManyToManyField(
         User, related_name='assigned_tasks')
+
+    def clean(self):
+        if self.due_date and self.due_date < timezone.now().date():
+            raise ValidationError("Due date cannot be in the past.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
