@@ -26,6 +26,13 @@ def create_profile(sender, instance, created, **kwargs):
 post_save.connect(create_profile, sender=User)
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
 class Task(models.Model):
     PRIORITY_CHOICES = [
         ('low', 'Low'),
@@ -49,8 +56,8 @@ class Task(models.Model):
     description = models.TextField(blank=True)
     due_date = models.DateField(null=True, blank=True)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
-    category = models.CharField(
-        max_length=100, choices=CATEGORY_CHOICES, blank=True, null=True)
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='pending')
     assigned_users = models.ManyToManyField(
@@ -72,10 +79,3 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
-
-
-class Category(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
