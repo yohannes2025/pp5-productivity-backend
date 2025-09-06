@@ -64,5 +64,11 @@ class Task(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
+    @property
+    def is_overdue(self):
+        if self.due_date and self.due_date < timezone.now().date() and self.status != 'done':
+            return True
+        return False
+
     def __str__(self):
         return self.title
