@@ -1,15 +1,15 @@
 # productivity_app/urls.py
 
 from django.urls import path, include
-from .views import RegisterViewSet, LoginViewSet, UserDetailView
+from .views import RegisterViewSet, LoginViewSet, UserDetailView, TaskViewSet, ProfileViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from rest_framework.routers import DefaultRouter
-from .views import ProfileViewSet
 
 app_name = 'productivity_app'
 
 router = DefaultRouter()
 router.register(r'profiles', ProfileViewSet, basename='profile')
+router.register(r'tasks', TaskViewSet, basename='task')
 
 urlpatterns = [
     path('api/register/', RegisterViewSet.as_view(), name='register'),
