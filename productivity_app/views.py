@@ -66,6 +66,7 @@ class TaskViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['priority', 'category', 'status']
+    search_fields = ['title', 'description']
 
     def perform_create(self, serializer):
         serializer.save()
