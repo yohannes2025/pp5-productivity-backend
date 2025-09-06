@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Profile
+from .models import Profile, Task
 
 User = get_user_model()
 
@@ -77,3 +77,19 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('name', 'avatar')
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    assigned_users = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), many=True)
+
+    class Meta:
+        model = Task
+        fields = ['id', 'title', 'description', 'due_date',
+                  'priority', 'category', 'status', 'assigned_users']
+
+    def create(self, validated_data):
+        assigned_users = validated_data.pop('assigned_users', [])
+        task = Task.objects.create(**validated_data)
+        task.assigned_users.set(assigned_users)
+        return task
