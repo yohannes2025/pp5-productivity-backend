@@ -54,7 +54,7 @@ class Task(models.Model):
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='pending')
     assigned_users = models.ManyToManyField(
-        User, related_name='assigned_tasks')
+        User, related_name='assigned_tasks', blank=True)
 
     def clean(self):
         if self.due_date and self.due_date < timezone.now().date():
