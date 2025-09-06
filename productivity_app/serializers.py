@@ -41,3 +41,26 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             username=name, email=validated_data['email'], password=validated_data['password'])
         return user
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if not email or not password:
+            raise serializers.ValidationError(
+                'Email and password are required.')
+
+        user = User.objects.filter(email=email).first()
+        if user is None or not user.check_password(password):
+            raise serializers.ValidationError('Invalid credentials.')
+
+        if not user.is_active:
+            raise serializers.ValidationError('User account is disabled.')
+
+        attrs['user'] = user
+        return attrs
