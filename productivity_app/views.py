@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from rest_framework.viewsets import ModelViewSet
 from .models import Profile, Task
+from django_filters.rest_framework import DjangoFilterBackend
 
 User = get_user_model()
 
@@ -63,6 +64,8 @@ class TaskViewSet(ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['priority']
 
     def perform_create(self, serializer):
         serializer.save()
