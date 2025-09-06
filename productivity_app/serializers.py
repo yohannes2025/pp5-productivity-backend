@@ -81,7 +81,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     assigned_users = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), many=True)
+        queryset=User.objects.all(), many=True, required=False)
 
     class Meta:
         model = Task
@@ -89,8 +89,20 @@ class TaskSerializer(serializers.ModelSerializer):
                   'priority', 'category', 'status', 'assigned_users', 'is_overdue']
         read_only_fields = ['is_overdue']
 
-    def create(self, validated_data):
-        assigned_users = validated_data.pop('assigned_users', [])
-        task = Task.objects.create(**validated_data)
-        task.assigned_users.set(assigned_users)
-        return task
+    assigned_users = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), many=True, required=False)
+
+
+def create(self, validated_data):
+    assigned_users = validated_data.pop('assigned_users', [])
+    task = super().create(validated_data)
+    task.assigned_users.set(assigned_users)
+    return task
+
+
+def update(self, instance, validated_data):
+    assigned_users = validated_data.pop('assigned_users', None)
+    instance = super().update(instance, validated_data)
+    if assigned_users is not None:
+        instance.assigned_users.set(assigned_users)
+    return instance
