@@ -86,7 +86,8 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['id', 'title', 'description', 'due_date',
-                  'priority', 'category', 'status', 'assigned_users']
+                  'priority', 'category', 'status', 'assigned_users', 'is_overdue']
+        read_only_fields = ['is_overdue']
 
     def create(self, validated_data):
         assigned_users = validated_data.pop('assigned_users', [])
