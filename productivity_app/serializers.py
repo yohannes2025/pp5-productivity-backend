@@ -2,15 +2,9 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Profile, Task
+from .models import Profile, Task, File
 
 User = get_user_model()
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "email"]
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -101,6 +95,12 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email"]
+
+
 class FileSerializer(serializers.ModelSerializer):
     """Serializer for file uploads."""
 
@@ -128,29 +128,34 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    """Serializer for creating and updating Task."""
     assigned_users = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), many=True, required=False)
+        queryset=User.objects.all(),
+        many=True,
+        required=False
+    )
+    upload_files = FileSerializer(many=True, read_only=True)
 
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'due_date',
-                  'priority', 'category', 'status', 'assigned_users', 'is_overdue']
-        read_only_fields = ['is_overdue']
+        fields = [
+            'id', 'title', 'description', 'due_date', 'priority', 'category',
+            'status', 'assigned_users', 'upload_files', 'created_at',
+            'updated_at', 'is_overdue'
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'is_overdue']
 
-    assigned_users = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), many=True, required=False)
+    def create(self, validated_data):
+        assigned_users_data = validated_data.pop('assigned_users', [])
+        task = Task.objects.create(**validated_data)
+        task.assigned_users.set(assigned_users_data)
+        return task
 
-
-def create(self, validated_data):
-    assigned_users = validated_data.pop('assigned_users', [])
-    task = super().create(validated_data)
-    task.assigned_users.set(assigned_users)
-    return task
-
-
-def update(self, instance, validated_data):
-    assigned_users = validated_data.pop('assigned_users', None)
-    instance = super().update(instance, validated_data)
-    if assigned_users is not None:
-        instance.assigned_users.set(assigned_users)
-    return instance
+    def update(self, instance, validated_data):
+        assigned_users_data = validated_data.pop('assigned_users', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if assigned_users_data is not None:
+            instance.assigned_users.set(assigned_users_data)
+        instance.save()
+        return instance
