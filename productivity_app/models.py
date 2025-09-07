@@ -1,4 +1,5 @@
 # productivity_app/models.py
+import os
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -129,3 +130,16 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class File(models.Model):
+    """Represents a file uploaded for a Task."""
+    task = models.ForeignKey(
+        Task, related_name='upload_files', on_delete=models.CASCADE
+    )
+    file = models.FileField(upload_to='task_files')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        # Return only the filename, not the full path
+        return os.path.basename(self.file.name)
