@@ -7,7 +7,10 @@ from django.utils import timezone
 
 
 class Profile(models.Model):
-
+    """
+    Extends the built-in User model with additional profile information.
+    Uses a OneToOneField to link each Profile to a User.
+    """
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -15,24 +18,28 @@ class Profile(models.Model):
         blank=True,
         related_name='profile'
     )
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(
+        auto_now_add=True)  # Temporary default
     updated_at = models.DateTimeField(auto_now=True)
     email = models.EmailField(
         max_length=254, unique=True, null=True, blank=True)
     name = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        ordering = [
-            '-created_at']  # Default ordering by creation date (descending)
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.user}" if self.user else "Profile"
 
-    def create_profile(sender, instance, created, **kwargs):
-        if created:
-            Profile.objects.create(user=instance)
 
-    post_save.connect(create_profile, sender=User)
+# Signal handler for creating Profile
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+
+# Connect the signal to the User model
+post_save.connect(create_profile, sender=User)
 
 
 class Category(models.Model):
