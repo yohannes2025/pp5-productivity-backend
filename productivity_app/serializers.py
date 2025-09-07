@@ -159,3 +159,13 @@ class TaskSerializer(serializers.ModelSerializer):
             instance.assigned_users.set(assigned_users_data)
         instance.save()
         return instance
+
+
+class TaskListSerializer(serializers.ModelSerializer):
+    """Serializer for listing tasks with summary info."""
+
+    class Meta:
+        model = Task
+        fields = ['id', 'title', 'description', 'due_date', 'priority',
+                  'category', 'status', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
