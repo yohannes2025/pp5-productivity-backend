@@ -71,6 +71,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
+    """Serializer for user login using email."""
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
@@ -80,23 +81,42 @@ class LoginSerializer(serializers.Serializer):
 
         if not email or not password:
             raise serializers.ValidationError(
-                'Email and password are required.')
+                'Email and password are required.', code='authorization')
 
-        user = User.objects.filter(email=email).first()
-        if user is None or not user.check_password(password):
-            raise serializers.ValidationError('Invalid credentials.')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                'Invalid credentials.', code='authorization')
+
+        if not user.check_password(password):
+            raise serializers.ValidationError(
+                'Invalid credentials.', code='authorization')
 
         if not user.is_active:
-            raise serializers.ValidationError('User account is disabled.')
+            raise serializers.ValidationError(
+                'User account is disabled.', code='authorization')
 
         attrs['user'] = user
         return attrs
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    """Serializer for user profile."""
+
     class Meta:
         model = Profile
-        fields = ('name', 'avatar')
+        fields = ['id', 'name', 'email', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+    def to_representation(self, instance):
+        """Include user ID and fallback email from user if needed."""
+        ret = super().to_representation(instance)
+        if instance.user:
+            ret['user_id'] = instance.user.id
+            if not ret['email']:
+                ret['email'] = instance.user.email
+        return ret
 
 
 class TaskSerializer(serializers.ModelSerializer):
