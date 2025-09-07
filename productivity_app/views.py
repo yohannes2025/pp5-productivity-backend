@@ -49,15 +49,30 @@ class RegisterViewSet(generics.CreateAPIView):
         return serializer.save()
 
 
-class LoginViewSet(APIView):
+class LoginViewSet(views.APIView):
+    """
+    Handles user login and token generation.
+    """
+
     def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
+        """
+        Handle POST request for user login.
+        """
+        serializer = LoginSerializer(
+            data=request.data, context={'request': request})
+
         serializer.is_valid(raise_exception=True)
+
+        # If valid, the user is in validated_data
         user = serializer.validated_data['user']
+
+        # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
+
+        # Return tokens in the response
         return Response({
-            'refresh': str(refresh),
             'access': str(refresh.access_token),
+            'refresh': str(refresh),
         }, status=status.HTTP_200_OK)
 
 
