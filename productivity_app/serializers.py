@@ -169,3 +169,22 @@ class TaskListSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'due_date', 'priority',
                   'category', 'status', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
+
+
+class TaskDetailSerializer(serializers.ModelSerializer):
+    """Serializer for detailed view of a task."""
+    assigned_users = UserSerializer(many=True, read_only=True)
+    assigned_user_ids = serializers.PrimaryKeyRelatedField(
+        source='assigned_users',
+        queryset=User.objects.all(),
+        many=True,
+        write_only=True,
+    )
+    upload_files = FileSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Task
+        fields = ['id', 'title', 'description', 'due_date', 'priority',
+                  'category', 'status', 'assigned_users', 'assigned_user_ids',
+                  'upload_files', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
