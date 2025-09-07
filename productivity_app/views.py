@@ -27,13 +27,21 @@ class RegisterViewSet(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        # Call perform_create to create the user
+        user = self.perform_create(serializer)
         refresh = RefreshToken.for_user(user)
         response_data = {
+            'message': 'User registered successfully',
+            'user_id': user.id,
+            'username': user.username,
+            'email': user.email,
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        return serializer.save()
 
 
 class LoginViewSet(APIView):
