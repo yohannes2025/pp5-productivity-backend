@@ -14,34 +14,38 @@ from rest_framework.filters import SearchFilter
 User = get_user_model()
 
 
-class UserDetailView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = UserSerializer
-
-    def get_object(self):
-        return self.request.user
-
-
 class RegisterViewSet(generics.CreateAPIView):
+    """
+    Handles user registration.
+    """
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        # Call perform_create to create the user
-        user = self.perform_create(serializer)
-        refresh = RefreshToken.for_user(user)
-        response_data = {
-            'message': 'User registered successfully',
-            'user_id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        """
+        Handle POST request for user registration.
+        Uses a transaction to ensure atomicity (user and profile creation).
+        """
+        with transaction.atomic():
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            # Call perform_create to create the user
+            user = self.perform_create(serializer)
+
+            refresh = RefreshToken.for_user(user)
+            response_data = {
+                'message': 'User registered successfully',
+                'user_id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
+        """
+        Custom perform_create to return the created user instance.
+        """
         return serializer.save()
 
 
@@ -55,6 +59,14 @@ class LoginViewSet(APIView):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }, status=status.HTTP_200_OK)
+
+
+class UserDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
 
 
 class ProfileViewSet(ModelViewSet):
