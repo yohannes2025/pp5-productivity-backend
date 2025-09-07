@@ -133,19 +133,53 @@ class ProfileViewSet(viewsets.ModelViewSet):
         instance.delete()
 
 
-class TaskViewSet(ModelViewSet):
-    queryset = Task.objects.all()
+class TaskViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing, creating, updating, and deleting Task instances.
+    Users can only see and edit tasks where they are assigned.
+    """
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['priority', 'category', 'status']
-    search_fields = ['title', 'description']
+    # Only authenticated users can interact
+    permission_classes = [IsAssignedOrReadOnly]
+    parser_classes = (JSONParser, MultiPartParser, FormParser)
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return Task.objects.filter(assigned_users=user).distinct()
+        return Task.objects.all()
 
     def perform_create(self, serializer):
+        """
+        Automatically assign the logged-in user to the created task.
+        If assigned_users are not provided in the request,
+        assign the creating user.
+
+        """
+        task = serializer.save(created_by=self.request.user)
+        if not task.assigned_users.exists():
+            task.assigned_users.set([self.request.user])
+
+    def perform_update(self, serializer):
+        """
+        Override perform_update to ensure the logged-in user
+        is assigned to the task before allowing the update.
+        """
+        task = self.get_object()
+        # Check if the requesting user is assigned to the task
+        if self.request.user not in task.assigned_users.all():
+            raise PermissionDenied(
+                "You do not have permission to edit this task.")
+
         serializer.save()
 
-
-class UsersListAPIView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    def perform_destroy(self, instance):
+        """
+        Override perform_destroy to ensure the logged-in user
+        is assigned to the task before allowing deletion.
+        """
+        # Check if the requesting user is assigned to the task
+        if self.request.user not in instance.assigned_users.all():
+            raise PermissionDenied(
+                "You do not have permission to delete this task.")
+        instance.delete()
