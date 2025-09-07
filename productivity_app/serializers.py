@@ -14,9 +14,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    """Serializer for user registration."""
     confirm_password = serializers.CharField(write_only=True)
-    name = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
+    name = serializers.CharField(label='Name', required=True)
+    email = serializers.EmailField(label='Email', required=True)
 
     class Meta:
         model = User
@@ -28,12 +29,17 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"password": "Passwords must match."})
         self.validate_password_strength(attrs['password'])
+
         if User.objects.filter(username=attrs['name']).exists():
-            raise serializers.ValidationError(
-                {"name": "A user with this username already exists."})
+            raise serializers.ValidationError({
+                "name": "A user with this username already exists."
+            })
+
         if User.objects.filter(email=attrs['email']).exists():
-            raise serializers.ValidationError(
-                {"email": "A user with this email already exists."})
+            raise serializers.ValidationError({
+                "email": "A user with this email already exists."
+            })
+
         return attrs
 
     def validate_password_strength(self, password):
@@ -43,10 +49,24 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': e.messages})
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password')
+        validated_data.pop('confirm_password', None)
         name = validated_data.pop('name')
+        email = validated_data['email']
+        password = validated_data['password']
+
         user = User.objects.create_user(
-            username=name, email=validated_data['email'], password=validated_data['password'])
+            username=name,
+            email=email,
+            password=password
+        )
+
+        try:
+            profile = user.profile
+            profile.name = name
+            profile.save()
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=user, name=name, email=email)
+
         return user
 
 
