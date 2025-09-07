@@ -90,24 +90,47 @@ class UsersListAPIView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UserDetailView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Allows users to retrieve, update, or delete their own profile.
+    """
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsSelfOrReadOnly]
 
     def get_object(self):
+        # Return the current authenticated user instance only
         return self.request.user
 
 
-class ProfileViewSet(ModelViewSet):
-    queryset = Profile.objects.all()
+class ProfileViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing and editing user profiles.
+    Public can view all profiles. Authenticated users
+    can edit/delete only their own profile.
+    """
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
+    queryset = Profile.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Profile.objects.all()
 
     def get_object(self):
-        return self.request.user.profile
+        obj = super().get_object()
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if self.request.user != obj.user:
+                raise PermissionDenied("You can only modify your own profile.")
+        return obj
 
     def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
+        if self.request.user != serializer.instance.user:
+            raise PermissionDenied("You can only update your own profile.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if self.request.user != instance.user:
+            raise PermissionDenied("You can only delete your own profile.")
+        instance.delete()
 
 
 class TaskViewSet(ModelViewSet):
