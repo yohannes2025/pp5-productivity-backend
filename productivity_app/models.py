@@ -15,7 +15,7 @@ class Profile(models.Model):
         blank=True,
         related_name='profile'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     email = models.EmailField(
         max_length=254, unique=True, null=True, blank=True)
@@ -43,11 +43,18 @@ class Category(models.Model):
 
 
 class Task(models.Model):
-    PRIORITY_CHOICES = [
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
+    """
+    Represents a task that can be assigned to one or more users.
+    Includes metadata like due date, priority, and optional file attachments.
+    """
+    # Choices for the 'status' field
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('done', 'Done'),
     ]
+
+    # Choices for the 'category' field
     CATEGORY_CHOICES = [
         ('development', 'Development'),
         ('design', 'Design'),
@@ -55,35 +62,58 @@ class Task(models.Model):
         ('documentation', 'Documentation'),
         ('other', 'Other'),
     ]
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('in_progress', 'In Progress'),
-        ('done', 'Done'),
+
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
     ]
 
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    due_date = models.DateField(null=True, blank=True)
+    description = models.TextField()
+    due_date = models.DateField(null=True, blank=True)  # optional due date
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
-    category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True, blank=True)
+    category = models.CharField(
+        max_length=100,
+        choices=CATEGORY_CHOICES,
+        blank=True,
+        null=True
+    )
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default='pending')
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
     assigned_users = models.ManyToManyField(
-        User, related_name='assigned_tasks', blank=True)
+        User, related_name='assigned_tasks'
+    )
+    created_by = models.ForeignKey(
+        User,
+        related_name='created_tasks',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['due_date', 'priority', 'status']
 
     def clean(self):
+        # Validate that due_date is not in the past
         if self.due_date and self.due_date < timezone.now().date():
             raise ValidationError("Due date cannot be in the past.")
 
     def save(self, *args, **kwargs):
-        self.clean()
+        self.clean()  # call clean before saving
         super().save(*args, **kwargs)
 
     @property
     def is_overdue(self):
-        if self.due_date and self.due_date < timezone.now().date() and self.status != 'done':
-            return True
+        """Checks if the task's due date is in the past."""
+        if self.due_date:
+            return timezone.now().date() > self.due_date and self.status != 'done'
         return False
 
     def __str__(self):
