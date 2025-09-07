@@ -7,23 +7,32 @@ from django.utils import timezone
 
 
 class Profile(models.Model):
+
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name='profile')
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='profile'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    email = models.EmailField(
+        max_length=254, unique=True, null=True, blank=True)
     name = models.CharField(max_length=255, blank=True)
-    email = models.EmailField(max_length=254, unique=True, blank=True)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+
+    class Meta:
+        ordering = [
+            '-created_at']  # Default ordering by creation date (descending)
 
     def __str__(self):
-        return self.name or self.user.username
+        return f"{self.user}" if self.user else "Profile"
 
+    def create_profile(sender, instance, created, **kwargs):
+        if created:
+            Profile.objects.create(user=instance)
 
-def create_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(
-            user=instance, name=instance.username, email=instance.email)
-
-
-post_save.connect(create_profile, sender=User)
+    post_save.connect(create_profile, sender=User)
 
 
 class Category(models.Model):
