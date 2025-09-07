@@ -1,15 +1,32 @@
 # productivity_app/views.py
-from rest_framework import generics, status
+from rest_framework import generics, viewsets, views, status
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
+
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, ProfileSerializer, TaskSerializer
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
+# Django imports
 from django.contrib.auth import get_user_model
-from rest_framework.viewsets import ModelViewSet
+from django.contrib.auth.models import User
+from django.db import transaction
+
+# Local application imports
 from .models import Profile, Task
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
+from .permissions import IsAssignedOrReadOnly, IsSelfOrReadOnly
+from .serializers import (
+    TaskSerializer,
+    ProfileSerializer,
+    RegisterSerializer,
+    LoginSerializer,
+    UserSerializer
+)
 
 User = get_user_model()
 
