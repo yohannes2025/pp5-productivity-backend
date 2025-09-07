@@ -76,6 +76,20 @@ class LoginViewSet(views.APIView):
         }, status=status.HTTP_200_OK)
 
 
+class UsersListAPIView(views.APIView):
+    """
+    A view to list all users.
+    Requires authentication to see the list.
+    """
+    permission_classes = [
+        IsAuthenticated]  # Only authenticated users can list users
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class UserDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
