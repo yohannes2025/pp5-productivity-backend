@@ -101,6 +101,14 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
+class FileSerializer(serializers.ModelSerializer):
+    """Serializer for file uploads."""
+
+    class Meta:
+        model = File
+        fields = ['id', 'file']
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile."""
 
