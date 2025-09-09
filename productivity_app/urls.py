@@ -1,4 +1,4 @@
-# productivity_app/serializers.py
+# productivity_app/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
