@@ -1,4 +1,3 @@
-# productivity_app/models.py
 import os
 from django.db import models
 from django.contrib.auth.models import User
@@ -6,7 +5,6 @@ from django.db.models.signals import post_save
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-
 
 User = get_user_model()
 
@@ -23,18 +21,14 @@ class Profile(models.Model):
         blank=True,
         related_name='profile'
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True)  # Temporary default
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    email = models.EmailField(
-        max_length=254, unique=True, null=True, blank=True)
-    name = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user}" if self.user else "Profile"
+        return f"Profile of {self.user.username}" if self.user else "Profile"
 
 
 # Signal handler for creating Profile
@@ -66,15 +60,6 @@ class Task(models.Model):
         ('done', 'Done'),
     ]
 
-    # Choices for the 'category' field
-    CATEGORY_CHOICES = [
-        ('development', 'Development'),
-        ('design', 'Design'),
-        ('testing', 'Testing'),
-        ('documentation', 'Documentation'),
-        ('other', 'Other'),
-    ]
-
     PRIORITY_CHOICES = [
         ('low', 'Low'),
         ('medium', 'Medium'),
@@ -85,9 +70,10 @@ class Task(models.Model):
     description = models.TextField()
     due_date = models.DateField(null=True, blank=True)  # optional due date
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
-    category = models.CharField(
-        max_length=100,
-        choices=CATEGORY_CHOICES,
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        related_name='tasks',
         blank=True,
         null=True
     )
@@ -118,7 +104,8 @@ class Task(models.Model):
             raise ValidationError("Due date cannot be in the past.")
 
     def save(self, *args, **kwargs):
-        self.clean()  # call clean before saving
+        # The clean() method is not called here, as it's typically
+        # handled by forms or serializers before a save operation.
         super().save(*args, **kwargs)
 
     @property
