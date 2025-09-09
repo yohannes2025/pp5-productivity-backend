@@ -1,8 +1,7 @@
-# productivity_app/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Profile, Task, File
+from .models import Profile, Task, File, Category
 
 User = get_user_model()
 
@@ -10,57 +9,48 @@ User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration."""
     confirm_password = serializers.CharField(write_only=True)
-    name = serializers.CharField(label='Name', required=True)
-    email = serializers.EmailField(label='Email', required=True)
 
     class Meta:
         model = User
-        fields = ('name', 'email', 'password', 'confirm_password')
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ('username', 'email', 'password', 'confirm_password')
+        extra_kwargs = {
+            'username': {'required': True, 'label': 'Name'},
+            'email': {'required': True},
+            'password': {'write_only': True}
+        }
 
     def validate(self, attrs):
         if attrs['password'] != attrs['confirm_password']:
             raise serializers.ValidationError(
                 {"password": "Passwords must match."})
-        self.validate_password_strength(attrs['password'])
 
-        if User.objects.filter(username=attrs['name']).exists():
-            raise serializers.ValidationError({
-                "name": "A user with this username already exists."
-            })
+        # Check password strength
+        try:
+            validate_password(attrs['password'], user=User(**attrs))
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError({'password': e.messages})
 
+        # Check for existing email
         if User.objects.filter(email=attrs['email']).exists():
             raise serializers.ValidationError({
                 "email": "A user with this email already exists."
             })
 
-        return attrs
+        # Check for existing username (name)
+        if User.objects.filter(username=attrs['username']).exists():
+            raise serializers.ValidationError({
+                "username": "A user with this username already exists."
+            })
 
-    def validate_password_strength(self, password):
-        try:
-            validate_password(password)
-        except serializers.ValidationError as e:
-            raise serializers.ValidationError({'password': e.messages})
+        return attrs
 
     def create(self, validated_data):
         validated_data.pop('confirm_password', None)
-        name = validated_data.pop('name')
-        email = validated_data['email']
-        password = validated_data['password']
-
         user = User.objects.create_user(
-            username=name,
-            email=email,
-            password=password
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
         )
-
-        try:
-            profile = user.profile
-            profile.name = name
-            profile.save()
-        except Profile.DoesNotExist:
-            Profile.objects.create(user=user, name=name, email=email)
-
         return user
 
 
@@ -111,28 +101,26 @@ class FileSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile."""
+    # Use StringRelatedField to access the related User's username and email
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    user_email = serializers.EmailField(source='user.email', read_only=True)
 
     class Meta:
         model = Profile
-        fields = ['id', 'name', 'email', 'created_at', 'updated_at']
+        fields = ['id', 'user_name', 'user_email', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
-
-    def to_representation(self, instance):
-        """Include user ID and fallback email from user if needed."""
-        ret = super().to_representation(instance)
-        if instance.user:
-            ret['user_id'] = instance.user.id
-            if not ret['email']:
-                ret['email'] = instance.user.email
-        return ret
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    """Serializer for creating and updating Task."""
+    """Serializer for creating and updating a Task."""
     assigned_users = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         many=True,
         required=False
+    )
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        required=True
     )
     upload_files = FileSerializer(many=True, read_only=True)
 
@@ -163,6 +151,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class TaskListSerializer(serializers.ModelSerializer):
     """Serializer for listing tasks with summary info."""
+    category = serializers.StringRelatedField()
 
     class Meta:
         model = Task
@@ -180,6 +169,7 @@ class TaskDetailSerializer(serializers.ModelSerializer):
         many=True,
         write_only=True,
     )
+    category = serializers.StringRelatedField()
     upload_files = FileSerializer(many=True, read_only=True)
 
     class Meta:
