@@ -6,6 +6,9 @@ from .models import Profile, Task, File, Category
 User = get_user_model()
 
 
+User = get_user_model()
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration."""
     confirm_password = serializers.CharField(write_only=True)
@@ -20,31 +23,37 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
+        errors = {}
+
+        # Check passwords match
         if attrs['password'] != attrs['confirm_password']:
-            raise serializers.ValidationError(
-                {"password": "Passwords must match."})
+            errors['password'] = "Passwords must match."
 
-        # Check password strength
+        # Validate password strength
+        user_data = {
+            'username': attrs['username'],
+            'email': attrs['email']
+        }
         try:
-            validate_password(attrs['password'], user=User(**attrs))
+            validate_password(attrs['password'], user=User(**user_data))
         except serializers.ValidationError as e:
-            raise serializers.ValidationError({'password': e.messages})
+            errors['password'] = " ".join(e.messages)
 
-        # Check for existing email
+        # Check if email already exists
         if User.objects.filter(email=attrs['email']).exists():
-            raise serializers.ValidationError({
-                "email": "A user with this email already exists."
-            })
+            errors['email'] = "A user with this email already exists."
 
-        # Check for existing username (name)
+        # Check if username already exists
         if User.objects.filter(username=attrs['username']).exists():
-            raise serializers.ValidationError({
-                "username": "A user with this username already exists."
-            })
+            errors['username'] = "A user with this username already exists."
+
+        if errors:
+            raise serializers.ValidationError(errors)
 
         return attrs
 
     def create(self, validated_data):
+        # Remove confirm_password before creating user
         validated_data.pop('confirm_password', None)
         user = User.objects.create_user(
             username=validated_data['username'],
