@@ -13,6 +13,7 @@ from .views import (
     RegisterViewSet,
     UsersListAPIView,
     UserDetailAPIView,
+    CategoryViewSet,
 )
 
 
@@ -21,6 +22,7 @@ app_name = "productivity_app"
 router = DefaultRouter()
 router.register(r'tasks', TaskViewSet, basename='task')
 router.register(r'profiles', ProfileViewSet, basename='profile')
+router.register(r'categories', CategoryViewSet, basename='category')
 
 urlpatterns = [
     path('api/register/', RegisterViewSet.as_view(), name='register'),
