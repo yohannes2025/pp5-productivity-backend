@@ -47,8 +47,8 @@ DEBUG = 'DEV' in os.environ
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'project-5-productivity-backend.onrender.com',
-    'project-5-productivity-frontend.onrender.com',
+    'pp5-productivity-backend.onrender.com',
+    'pp5-productivity-frontend.onrender.com',
 ]
 
 # Add Render.com URL to allowed hosts
