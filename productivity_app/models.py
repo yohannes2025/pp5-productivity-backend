@@ -112,7 +112,11 @@ class Task(models.Model):
     def is_overdue(self):
         """Checks if the task's due date is in the past."""
         if self.due_date:
-            return timezone.now().date() > self.due_date and self.status != 'done'
+            return (
+                timezone.now().date() > self.due_date
+                and self.status != 'done'
+            )
+
         return False
 
     def __str__(self):

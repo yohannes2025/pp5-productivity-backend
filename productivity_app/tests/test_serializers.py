@@ -50,7 +50,9 @@ def test_register_serializer_invalid_data(field, value):
     # Create an existing user if testing for existing fields
     if field in ['email', 'username']:
         User.objects.create_user(
-            username='existinguser', email='test@example.com', password='password123!'
+            username='existinguser',
+            email='test@example.com',
+            password='password123!'
         )
 
     data = {

@@ -34,7 +34,7 @@ class IsSelfOrReadOnly(BasePermission):
 
 class IsOwnerOrReadOnly(BasePermission):
     """
-    Allows users to edit/delete only their own related objects 
+    Allows users to edit/delete only their own related objects
     (e.g., profiles).
     """
 
