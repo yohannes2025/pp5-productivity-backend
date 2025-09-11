@@ -1,117 +1,102 @@
-import pytest
+# productivity_app/tests/test_permissions.py
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from productivity_app.models import Task, Profile, Category
+from productivity_app.permissions import IsAssignedOrReadOnly, IsSelfOrReadOnly, IsOwnerOrReadOnly
 from rest_framework.test import APIRequestFactory
 from rest_framework import status
-from django.contrib.auth import get_user_model
-from productivity_app.models import Task, Profile
-from productivity_app.permissions import (
-    IsAssignedOrReadOnly,
-    IsSelfOrReadOnly,
-    IsOwnerOrReadOnly,
-)
-from django.utils import timezone
-from datetime import timedelta
+from rest_framework.views import APIView
 
 User = get_user_model()
 
 
-@pytest.fixture
-def factory():
-    return APIRequestFactory()
+class DummyView(APIView):
+    """A dummy view for testing permissions."""
+    pass
 
 
-@pytest.fixture
-def user1(db):
-    return User.objects.create_user(username="user1", password="pass123")
+def setUp(self):
+    self.user1 = User.objects.create_user(
+        username="user1", email="user1@example.com", password="password123")
+    self.user2 = User.objects.create_user(
+        username="user2", email="user2@example.com", password="password123")
 
+    self.category = Category.objects.create(name="Testing")
 
-@pytest.fixture
-def user2(db):
-    return User.objects.create_user(username="user2", password="pass123")
-
-
-@pytest.fixture
-def task(user1, user2):
-    task = Task.objects.create(
-        title="Task A",
-        description="Test Task",
-        due_date=timezone.now().date() + timedelta(days=1),
-        priority="medium",
+    # Task assigned only to user1
+    self.task = Task.objects.create(
+        title="Test Task",
+        description="Task description",
+        due_date="2100-01-01",
+        priority="high",
         status="pending",
-        created_by=user1,
+        created_by=self.user1,
+        category=self.category
     )
-    task.assigned_users.set([user1])
-    return task
+    self.task.assigned_users.set([self.user1])
 
+    # Get or create profile to avoid unique constraint errors
+    self.profile, created = Profile.objects.get_or_create(user=self.user1)
 
-@pytest.fixture
-def profile(user1):
-    return user1.profile  # auto-created via signal
+    self.factory = APIRequestFactory()
 
+    # --- IsAssignedOrReadOnly tests ---
+    def test_is_assigned_or_readonly_safe_methods(self):
+        permission = IsAssignedOrReadOnly()
+        request = self.factory.get("/tasks/")
+        request.user = self.user2
+        self.assertTrue(permission.has_permission(request, DummyView()))
+        self.assertTrue(permission.has_object_permission(
+            request, DummyView(), self.task))
 
-# --- IsAssignedOrReadOnly ---
+    def test_is_assigned_or_readonly_non_safe_methods(self):
+        permission = IsAssignedOrReadOnly()
+        request = self.factory.patch("/tasks/")
+        request.user = self.user2
+        self.assertTrue(permission.has_permission(request, DummyView()))
+        self.assertFalse(permission.has_object_permission(
+            request, DummyView(), self.task))
 
-def test_is_assigned_or_read_only_allows_safe_methods(factory, user2, task):
-    request = factory.get("/")
-    request.user = user2
-    perm = IsAssignedOrReadOnly()
-    assert perm.has_object_permission(request, None, task)
+        request.user = self.user1
+        self.assertTrue(permission.has_object_permission(
+            request, DummyView(), self.task))
 
+    # --- IsSelfOrReadOnly tests ---
+    def test_is_self_or_readonly(self):
+        permission = IsSelfOrReadOnly()
+        request = self.factory.patch("/users/")
+        request.user = self.user1
 
-def test_is_assigned_or_read_only_denies_unassigned_edit(factory, user2, task):
-    request = factory.patch("/")
-    request.user = user2
-    perm = IsAssignedOrReadOnly()
-    assert not perm.has_object_permission(request, None, task)
+        # Can modify self
+        self.assertTrue(permission.has_object_permission(
+            request, DummyView(), self.user1))
+        # Cannot modify other
+        self.assertFalse(permission.has_object_permission(
+            request, DummyView(), self.user2))
 
+        # Safe methods
+        request = self.factory.get("/users/")
+        request.user = self.user2
+        self.assertTrue(permission.has_object_permission(
+            request, DummyView(), self.user1))
 
-def test_is_assigned_or_read_only_allows_assigned_edit(factory, user1, task):
-    request = factory.patch("/")
-    request.user = user1
-    perm = IsAssignedOrReadOnly()
-    assert perm.has_object_permission(request, None, task)
+    # --- IsOwnerOrReadOnly tests ---
+    def test_is_owner_or_readonly(self):
+        permission = IsOwnerOrReadOnly()
+        request = self.factory.patch("/profiles/")
+        request.user = self.user1
 
+        # Can modify own profile
+        self.assertTrue(permission.has_object_permission(
+            request, DummyView(), self.profile))
 
-# --- IsSelfOrReadOnly ---
+        # Cannot modify other's profile
+        other_profile = Profile.objects.create(user=self.user2)
+        self.assertFalse(permission.has_object_permission(
+            request, DummyView(), other_profile))
 
-def test_is_self_or_read_only_allows_safe_methods(factory, user1, user2):
-    request = factory.get("/")
-    request.user = user1
-    perm = IsSelfOrReadOnly()
-    assert perm.has_object_permission(request, None, user2)
-
-
-def test_is_self_or_read_only_allows_self_edit(factory, user1):
-    request = factory.patch("/")
-    request.user = user1
-    perm = IsSelfOrReadOnly()
-    assert perm.has_object_permission(request, None, user1)
-
-
-def test_is_self_or_read_only_denies_edit_other_user(factory, user1, user2):
-    request = factory.patch("/")
-    request.user = user1
-    perm = IsSelfOrReadOnly()
-    assert not perm.has_object_permission(request, None, user2)
-
-
-# --- IsOwnerOrReadOnly ---
-
-def test_is_owner_or_read_only_allows_safe_methods(factory, user1, profile):
-    request = factory.get("/")
-    request.user = user1
-    perm = IsOwnerOrReadOnly()
-    assert perm.has_object_permission(request, None, profile)
-
-
-def test_is_owner_or_read_only_allows_owner_edit(factory, user1, profile):
-    request = factory.patch("/")
-    request.user = user1
-    perm = IsOwnerOrReadOnly()
-    assert perm.has_object_permission(request, None, profile)
-
-
-def test_is_owner_or_read_only_denies_non_owner_edit(factory, user2, profile):
-    request = factory.patch("/")
-    request.user = user2
-    perm = IsOwnerOrReadOnly()
-    assert not perm.has_object_permission(request, None, profile)
+        # Safe methods
+        request = self.factory.get("/profiles/")
+        request.user = self.user2
+        self.assertTrue(permission.has_object_permission(
+            request, DummyView(), self.profile))

@@ -1,3 +1,4 @@
+# pro
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -136,9 +137,9 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = [
-            'id', 'title', 'description', 'due_date', 'priority', 'category',
-            'status', 'assigned_users', 'upload_files', 'created_at',
-            'updated_at', 'is_overdue'
+            'id', 'title', 'description', 'due_date', 'priority',
+            'category', 'status', 'assigned_users', 'upload_files',
+            'created_at', 'updated_at', 'is_overdue',
         ]
         read_only_fields = ['created_at', 'updated_at', 'is_overdue']
 
