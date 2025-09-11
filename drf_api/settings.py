@@ -88,7 +88,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://project-5-productivity-frontend.onrender.com",
+    "https://pp5-productivity-frontend.onrender.com",
     "http://localhost:3000",
 ]
 
@@ -102,7 +102,7 @@ CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://project-5-productivity-frontend.onrender.com",
+    "https://pp5-productivity-frontend.onrender.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
