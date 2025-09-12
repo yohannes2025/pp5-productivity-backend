@@ -58,7 +58,7 @@ This project provides a Django Rest Framework API for the [Productivity App Proj
 
 ## Planning
 
-Planning started by creating epics and user stories for the frontend application, based on the project goals. The user stories were used to inform wireframes mapping out the intended functionality and 'flow' through the app. See the [repo for the frontend React app](https://github.com/yohannes2025/project-5-productivity-frontend) for more details.
+Planning started by creating epics and user stories for the frontend application, based on the project goals. The user stories were used to inform wireframes mapping out the intended functionality and 'flow' through the app. See the [repo for the frontend React app](https://github.com/yohannes2025/pp5-productivity-frontend) for more details.
 
 The user stories requiring implementation to achieve a minimum viable product (MVP) were then mapped to API endpoints required to support the desired functionality.
 
