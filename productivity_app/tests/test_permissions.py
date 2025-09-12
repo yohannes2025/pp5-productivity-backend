@@ -1,10 +1,8 @@
-# productivity_app/tests/test_permissions.py
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from productivity_app.models import Task, Profile, Category
 from productivity_app.permissions import IsAssignedOrReadOnly, IsSelfOrReadOnly, IsOwnerOrReadOnly
 from rest_framework.test import APIRequestFactory
-from rest_framework import status
 from rest_framework.views import APIView
 
 User = get_user_model()
@@ -15,30 +13,31 @@ class DummyView(APIView):
     pass
 
 
-def setUp(self):
-    self.user1 = User.objects.create_user(
-        username="user1", email="user1@example.com", password="password123")
-    self.user2 = User.objects.create_user(
-        username="user2", email="user2@example.com", password="password123")
+class PermissionTests(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(
+            username="user1", email="user1@example.com", password="password123")
+        self.user2 = User.objects.create_user(
+            username="user2", email="user2@example.com", password="password123")
 
-    self.category = Category.objects.create(name="Testing")
+        self.category = Category.objects.create(name="Testing")
 
-    # Task assigned only to user1
-    self.task = Task.objects.create(
-        title="Test Task",
-        description="Task description",
-        due_date="2100-01-01",
-        priority="high",
-        status="pending",
-        created_by=self.user1,
-        category=self.category
-    )
-    self.task.assigned_users.set([self.user1])
+        # Task assigned only to user1
+        self.task = Task.objects.create(
+            title="Test Task",
+            description="Task description",
+            due_date="2100-01-01",
+            priority="high",
+            status="pending",
+            created_by=self.user1,
+            category=self.category
+        )
+        self.task.assigned_users.set([self.user1])
 
-    # Get or create profile to avoid unique constraint errors
-    self.profile, created = Profile.objects.get_or_create(user=self.user1)
+        # Get or create profile to avoid unique constraint errors
+        self.profile, created = Profile.objects.get_or_create(user=self.user1)
 
-    self.factory = APIRequestFactory()
+        self.factory = APIRequestFactory()
 
     # --- IsAssignedOrReadOnly tests ---
     def test_is_assigned_or_readonly_safe_methods(self):
@@ -91,7 +90,8 @@ def setUp(self):
             request, DummyView(), self.profile))
 
         # Cannot modify other's profile
-        other_profile = Profile.objects.create(user=self.user2)
+        # Get the existing profile for user2 instead of trying to create a new one.
+        other_profile = Profile.objects.get(user=self.user2)
         self.assertFalse(permission.has_object_permission(
             request, DummyView(), other_profile))
 

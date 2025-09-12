@@ -168,6 +168,18 @@ A comprehensive suite of unit and integration tests was implemented across all m
 
 ---
 
+## ✅ Test Summary
+
+| Area           | Tests Run | Passed | Failed |
+| -------------- | --------- | ------ | ------ |
+| models.py      | 4+        | ✅ All | 0      |
+| permissions.py | 4+        | ✅ All | 0      |
+| serializers.py | 5+        | ✅ All | 0      |
+| views.py       | 11+       | ✅ All | 0      |
+| urls.py        | 9         | ✅ All | 0      |
+
+---
+
 ## Automated tests
 
 ### 📦 productivity_app/models.py Tests
