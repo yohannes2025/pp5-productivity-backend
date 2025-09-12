@@ -753,12 +753,37 @@ Thanks to this experience, I’ve grown more confident in making practical produ
 
 # Credits
 
-## Acknowledging Support and Opportunity
+## Project Credits
+
+This project was developed with the generous support of a number of open-source frameworks, libraries, and educational resources. We extend our sincere gratitude to the developers and communities behind these incredible tools.
+
+### Frameworks & Libraries
+
+- **Django**: A high-level Python web framework that encourages rapid development and clean, pragmatic design.
+- **Django REST Framework (DRF)**: A powerful and flexible toolkit for building Web APIs. It provides serialization, authentication, and permission policies, making API development efficient and enjoyable.
+- **dj-rest-auth & Django Allauth**: A robust authentication solution for Django REST Framework, providing a comprehensive set of API endpoints for registration, authentication, and social media login.
+- **djangorestframework-simplejwt**: A lightweight, easy-to-use library for implementing JSON Web Token (JWT) authentication.
+- **django-cors-headers**: A crucial library for handling Cross-Origin Resource Sharing (CORS) headers, which is essential for connecting a front-end application to a Django back-end.
+- **Cloudinary**: A cloud-based service for managing images and other media files, seamlessly integrated with Django for efficient media handling and delivery.
+
+### Learning Resources & Tutorials
+
+- **Code Institute**: This project was completed as part of the Full Stack Software Development program at Code Institute. The course provided the foundational knowledge, practical skills, and project-based learning necessary to build a complete web application.
+- **Official Documentation**: The official documentation for Django and Django REST Framework served as an invaluable and authoritative resource throughout the development process.
+- **Online Tutorials & Community**: General guidance and problem-solving techniques were sourced from the broader development community through platforms such as Stack Overflow, Real Python, and various programming blogs.
+
+### Tools
+
+- **Heroku**: A platform as a service (PaaS) that provided the hosting environment for the project.
+- **Git & GitHub**: Used for version control and collaborative development, ensuring a streamlined and organized workflow.
+- **Postman**: A powerful API platform used for testing and debugging the API endpoints during development.
+
+### Acknowledging Support and Opportunity
 
 I want to extend my sincere appreciation to the **Code Institute student care team** for their incredible tolerance and support. My project submission ended up being overdue by approximately a month, and their understanding during this challenging period was invaluable.
 
 Finally, I am profoundly grateful to the **entire Code Institute staff** for providing me with the opportunity to pursue my dream of becoming a **full-stack software developer**. The education and experience have been transformative.
 
-### Acknowledgments
+## Acknowledgments
 
-- Thank you very much Code Institute Student Care Team Tutor and Mentor for your dedication and commitment in supporting me to achieve in submitting this Advanced Front-End Full Stack Software Development project and broadening my career opportunities.
+I would like to give special thanks to our mentors, tutors, and peers at Code Institute, whose guidance and support were instrumental in the successful completion of this project. Their encouragement and expertise made the learning journey both rewarding and effective.
