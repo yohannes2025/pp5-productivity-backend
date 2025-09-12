@@ -281,20 +281,14 @@ A comprehensive suite of unit and integration tests was implemented across all m
 
 ---
 
-## Resolved bugs
+## Resolved Bugs
 
-### Bugs found while testing the API in isolation
+- Fixed task filtering and pagination issues during isolated API testing.
 
-- Task.is_overdue TypeError
-- File.**str**() failed when file missing
-- Profile.**str**() returned None
-- assigned_user_ids not saving in TaskDetailSerializer
-- get_queryset failed for anonymous users
-- LoginViewSet not checking active users
+- Resolved JWT token refresh errors during authentication testing.
 
-### Bugs found while testing the React front-end
-
-- (You can fill in any front-end bugs discovered during manual/automated testing)
+- Addressed PEP8 violations ('line too long' in `productivity_app/auth.py` and `productivity_app/serializers.py`)
+- removed commented-out code in `productivity_app/models.py` for improved code quality.
 
 ---
 

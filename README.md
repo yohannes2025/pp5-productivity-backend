@@ -9,8 +9,10 @@ This application is built to ensure a **seamless user experience** in maintainin
 
 ## Table of contents
 
+- [Project Overview](#project-overview)
 - [Project goals](#project-goals)
 - [Planning](#planning)
+- [Agile Project Management](#agile-project-management)
 
 * [Data models](#data-models)
   - [**Category**](#category)
@@ -34,30 +36,56 @@ This application is built to ensure a **seamless user experience** in maintainin
   - [django-filter](#django-filter)
   - [django-cors-headers](#django-cors-headers)
 - [Testing](#testing)
-  - [Manual testing](#manual-testing)
-  - [Automated tests](#automated-tests)
-  - [Python validation](#python-validation)
-  - [Resolved bugs](#resolved-bugs)
-    - [Bugs found while testing the API in isolation](#bugs-found-while-testing-the-api-in-isolation)
-    - [Bugs found while testing the React front-end](#bugs-found-while-testing-the-react-front-end)
-  - [Unresolved bugs](#unresolved-bugs)
 - [Deployment](#deployment)
 - [Credits](#credits)
 
 ---
 
+## Project Overview
+
+The Productivity App Backend is built using Django REST Framework to provide a secure and scalable API for a productivity application. It supports user registration, login, and task management with full CRUD operations, file uploads, and filtering capabilities. Custom models (`Task`, `Category`, `Priority`, `TaskStatus`, `UserProfile`) are designed to handle relational data efficiently, with permissions ensuring users can only modify authorized resources. The backend is deployed on Render.com, with environment variables safeguarding sensitive information like secret keys and database URLs.
+
 ## Project Goals
 
 This project provides a Django Rest Framework API for the [Productivity App Project](https://github.com/yohannes2025/pp5_productivity_app_frontend).
 
-The **Productivity App** project focuses on developing a **calendar-driven application** designed to help users organize their time efficiently. This **browser-based platform** allows users to create and manage **tasks and habits** effectively.
-This application is built to ensure a **seamless user experience** in maintaining daily productivity through a clean, intuitive interface and smart task organization tools.
+- Provide a **robust API** for task creation, retrieval, updating, and deletion, with support for filtering and pagination.
+- Ensure **secure authentication** using JSON Web Tokens (JWT) and social media login via `dj-allauth`.
+- Support **relational data models** for tasks, categories, priorities, and user profiles, with proper validation and permissions.
+- Enable **file uploads** for task attachments, stored securely on **Cloudinary**.
+- Maintain **code quality** through PEP8 compliance, modular design, and descriptive version control practices.
+- Facilitate **third-party integration** by providing well-documented, RESTful endpoints with CORS support.
 
 ## Planning
 
 Planning started by creating epics and user stories for the frontend application, based on the project goals. The user stories were used to inform wireframes mapping out the intended functionality and 'flow' through the app. See the [repo for the frontend React app](https://github.com/yohannes2025/project-5-productivity-frontend) for more details.
 
 The user stories requiring implementation to achieve a minimum viable product (MVP) were then mapped to API endpoints required to support the desired functionality.
+
+## Agile Project Management
+
+The backend development followed **Agile methodologies**, utilizing **GitHub Issues** and **Project Boards** for task tracking and prioritization. User stories were defined with clear descriptions, tasks, and acceptance criteria, prioritized using the **MoSCoW method** (Must have, Should have, Could have, Won't have). Key epics, such as **task management** and **authentication**, were mapped to milestones to ensure timely delivery of the **Minimum Viable Product (MVP)**.
+
+### GitHub Issues
+
+- Used to document user stories (e.g., _"As a user, I want to create tasks with due dates"_), bugs, and tasks.
+- Labels were applied for prioritization (e.g., _"Must have"_, _"High Priority"_).
+
+### Project Board
+
+- Organized into columns: **To Do**, **In Progress**, **Done**.
+- Visualized workflow and tracked progress effectively.
+
+### Commit Messages
+
+- Improved to follow best practices.
+- Example: _"Add task creation endpoint with validation"_ instead of generic _"Update code"_.
+- See **Git Commit Best Practices** for guidelines.
+
+### Planning Artifacts
+
+- **Database schemas** and **API endpoint designs** were created to align with user stories.
+- Ensured a cohesive and scalable backend structure.
 
 # productivity_app/models.py
 
@@ -108,91 +136,27 @@ The user stories requiring implementation to achieve a minimum viable product (M
   - `avatar`: `ImageField(upload_to='avatars/', null=True, blank=True)` - Allows uploading an avatar image for the user. Images will be stored in the `avatars/` directory within the media root. Allows for no avatar to be uploaded.
 - **`__str__` method:** Returns the name associated with the user profile.
 
-# API Endpoints Table
+## API Endpoints Table
 
-| Endpoint              | Method    | Description                                                                |
-| --------------------- | --------- | -------------------------------------------------------------------------- |
-| status.               |
-| `/api/tasks/`         | GET       | Retrieve a list of all tasks (supports filtering and pagination).          |
-| `/api/tasks/`         | POST      | Create a new task (requires relevant fields in request body).              |
-| `/api/tasks/<id>/`    | GET       | Retrieve a specific task by its ID.                                        |
-| `/api/tasks/<id>/`    | PUT/PATCH | Update an existing task (requires fields to update in request body).       |
-| `/api/tasks/<id>/`    | DELETE    | Delete a specific task.                                                    |
-| `/api/profiles/`      | GET       | Retrieve a list of all user profiles.                                      |
-| `/api/profiles/`      | POST      | Create a new user profile (requires `name` and optionally `avatar`).       |
-| `/api/profiles/<id>/` | GET       | Retrieve a specific user profile by its ID.                                |
-| `/api/profiles/<id>/` | PUT/PATCH | Update an existing user profile (requires `name` and optionally `avatar`). |
-| `/api/profiles/<id>/` | DELETE    | Delete a specific user profile.                                            |
-
-| `/api/users/` | GET | Retrieve authorized users list. |
-| `/api/users/me/` | PUT/PATCH | Update settings for a specific user (admin/specific user access). |
-
-## Frameworks, libraries and dependencies
-
-The Productivity API is implemented in Python using [Django](https://www.djangoproject.com) and [Django Rest Framework](https://django-filter.readthedocs.io/en/stable/).
-
-The following additional utilities, apps and modules were also used.
-
-### django-cloudinary-storage
-
-https://pypi.org/project/django-cloudinary-storage/
-
-Enables cloudinary integration for storing user profile images in cloudinary.
-
-### dj-allauth
-
-https://django-allauth.readthedocs.io/en/latest/
-
-Used for user authentication. this package enables registration and authentication using a range of social media accounts.
-
-### dj-rest-auth
-
-https://dj-rest-auth.readthedocs.io/en/latest/introduction.html
-
-Provides REST API endpoints for login and logout.
-
-### djangorestframework-simplejwt
-
-https://django-rest-framework-simplejwt.readthedocs.io/en/latest/
-
-Provides JSON web token authentication.
-
-### dj-database-url
-
-https://pypi.org/project/dj-database-url/
-
-Creates an environment variable to configure the connection to the database.
-
-### psychopg2
-
-https://pypi.org/project/psycopg2/
-
-Database adapater to enable interaction between Python and the PostgreSQL database.
-
-### python-dateutil
-
-https://pypi.org/project/python-dateutil/
-
-This module provides extensions to the standard Python datetime module. It is a pre-requisite for django-recurrence library.
-
-### django-recurrence
-
-https://django-recurrence.readthedocs.io/en/latest/
-
-This utility enables functionality for working with recurring dates in Django. It provides a `ReccurenceField` field type for storing recurring datetimes in the database.
-
-### django-filter
-
-https://django-filter.readthedocs.io/en/stable/
-
-django-filter is used to implement ISO datetime filtering functionality for the `events` GET endpoint. The client is able to request dates within a range using the `from_date` and `to_date` URL parameters. The API performs an additional check after filtering to 'catch' any repeat events within the requested range, where the original event stored in the database occurred beforehand.
-
-### django-cors-headers
-
-https://pypi.org/project/django-cors-headers/
-
-This Django app adds Cross-Origin-Resource Sharing (CORS) headers to responses, to enable the API to respond to requests from origins other than its own host.
-Productivity App is configured to allow requests from all origins, to facilitate future development of a native mobile app using this API.
+| Endpoint              | Method    | Description                                    | Status |
+| --------------------- | --------- | ---------------------------------------------- | ------ | --- |
+| `/api/tasks/`         | GET       | List all tasks (supports filtering/pagination) | Active |
+| `/api/tasks/`         | POST      | Create a new task                              | Active |
+| `/api/tasks/<id>/`    | GET       | Retrieve specific task by ID                   | Active |
+| `/api/tasks/<id>/`    | PUT/PATCH | Update a task                                  | Active |
+| `/api/tasks/<id>/`    | DELETE    | Delete a task                                  | Active |
+| `/api/profiles/`      | GET       | List all user profiles                         | Active |
+| `/api/profiles/`      | POST      | Create a new profile                           | Active |
+| `/api/profiles/<id>/` | GET       | Retrieve profile by ID                         | Active |
+| `/api/profiles/<id>/` | PUT/PATCH | Update profile                                 | Active |
+| `/api/profiles/<id>/` | DELETE    | Delete profile                                 | Active |
+| `/api/users/`         | GET       | List all authorized users                      | Active |
+| `/api/users/me/`      | PUT/PATCH | Update current user’s settings                 | Active |
+| `/api/register/`      | POST      | Register a new user                            | Active |
+| `/api/login/`         | POST      | Log in user, return JWT tokens                 | Active |
+| `/api/token/`         | POST      | Obtain JWT access and refresh tokens           | Active |
+| `/api/token/refresh/` | POST      | Refresh an expired access token                | Active |
+| `/api/token/verify/`  | POST      | Verify a JWT token                             | Active |     |
 
 # productivity_app/serializers.py
 
@@ -452,9 +416,80 @@ This `urls.py` file configures the URL routing for the Django project. It direct
 
 This setup ensures that the main project URL routing is clean, organized, and user-friendly, directing API traffic appropriately and providing a simple landing message.
 
+# Frameworks, libraries and dependencies
+
+The Productivity API is implemented in Python using [Django](https://www.djangoproject.com) and [Django Rest Framework](https://django-filter.readthedocs.io/en/stable/).
+
+The following additional utilities, apps and modules were also used.
+
+### django-cloudinary-storage
+
+https://pypi.org/project/django-cloudinary-storage/
+
+Enables cloudinary integration for storing user profile images in cloudinary.
+
+### dj-allauth
+
+https://django-allauth.readthedocs.io/en/latest/
+
+Used for user authentication. this package enables registration and authentication using a range of social media accounts.
+
+### dj-rest-auth
+
+https://dj-rest-auth.readthedocs.io/en/latest/introduction.html
+
+Provides REST API endpoints for login and logout.
+
+### djangorestframework-simplejwt
+
+https://django-rest-framework-simplejwt.readthedocs.io/en/latest/
+
+Provides JSON web token authentication.
+
+### dj-database-url
+
+https://pypi.org/project/dj-database-url/
+
+Creates an environment variable to configure the connection to the database.
+
+### psychopg2
+
+https://pypi.org/project/psycopg2/
+
+Database adapater to enable interaction between Python and the PostgreSQL database.
+
+### python-dateutil
+
+https://pypi.org/project/python-dateutil/
+
+This module provides extensions to the standard Python datetime module. It is a pre-requisite for django-recurrence library.
+
+### django-recurrence
+
+https://django-recurrence.readthedocs.io/en/latest/
+
+This utility enables functionality for working with recurring dates in Django. It provides a `ReccurenceField` field type for storing recurring datetimes in the database.
+
+### django-filter
+
+https://django-filter.readthedocs.io/en/stable/
+
+django-filter is used to implement ISO datetime filtering functionality for the `events` GET endpoint. The client is able to request dates within a range using the `from_date` and `to_date` URL parameters. The API performs an additional check after filtering to 'catch' any repeat events within the requested range, where the original event stored in the database occurred beforehand.
+
+### django-cors-headers
+
+https://pypi.org/project/django-cors-headers/
+
+This Django app adds Cross-Origin-Resource Sharing (CORS) headers to responses, to enable the API to respond to requests from origins other than its own host.
+Productivity App is configured to allow requests from all origins, to facilitate future development of a native mobile app using this API.
+
+# Testing
+
+Comprehensive testing details, including manual tests, automated tests, and Python validation, are documented in [TESTING.md](TESTING.md). Tests verified API endpoint functionality, authentication, permissions, and code quality, ensuring a robust and reliable backend.
+
 # Deployment
 
-# Overcoming Deployment Challenges: From Heroku to Render.com
+## Overcoming Deployment Challenges: From Heroku to Render.com
 
 ---
 
@@ -464,7 +499,7 @@ After considerable effort with Heroku yielded no success, I made the decision to
 
 Crucially, **last week, a Code Institute staff member sent me a Render.com manual**. This alternative solution to Heroku deployment proved invaluable, and I am very thankful for it. The moment my project successfully deployed to Render.com was a **great relief**. It marked the culmination of significant effort and a successful navigation of unforeseen technical difficulties.
 
-# Deploying a Django REST Framework Backend to Render.com
+## Deploying a Django REST Framework Backend to Render.com
 
 ## Prerequisites
 
@@ -684,7 +719,7 @@ Here’s what the final version of the frontend includes:
 
 ---
 
-## ❌ Features Postponed for Later
+## Features Postponed for Later
 
 The following views/features were initially planned but **have been postponed** to a potential future upgrade:
 
@@ -718,7 +753,7 @@ Thanks to this experience, I’ve grown more confident in making practical produ
 
 # Credits
 
-# Acknowledging Support and Opportunity
+## Acknowledging Support and Opportunity
 
 I want to extend my sincere appreciation to the **Code Institute student care team** for their incredible tolerance and support. My project submission ended up being overdue by approximately a month, and their understanding during this challenging period was invaluable.
 
