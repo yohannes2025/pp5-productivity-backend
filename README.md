@@ -774,13 +774,12 @@ This project was developed with the generous support of a number of open-source 
 
 ### Tools
 
-- **Heroku**: A platform as a service (PaaS) that provided the hosting environment for the project.
+- **Render**: A platform as a service (PaaS) that provided the hosting environment for the project.
 - **Git & GitHub**: Used for version control and collaborative development, ensuring a streamlined and organized workflow.
-- **Postman**: A powerful API platform used for testing and debugging the API endpoints during development.
 
 ### Acknowledging Support and Opportunity
 
-I want to extend my sincere appreciation to the **Code Institute student care team** for their incredible tolerance and support. My project submission ended up being overdue by approximately a month, and their understanding during this challenging period was invaluable.
+I want to extend my sincere appreciation to the **Code Institute student care team** for their incredible support.
 
 Finally, I am profoundly grateful to the **entire Code Institute staff** for providing me with the opportunity to pursue my dream of becoming a **full-stack software developer**. The education and experience have been transformative.
 
