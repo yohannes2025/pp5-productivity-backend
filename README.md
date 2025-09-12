@@ -755,7 +755,7 @@ Thanks to this experience, I’ve grown more confident in making practical produ
 
 ## Project Credits
 
-This project was developed with the generous support of a number of open-source frameworks, libraries, and educational resources. I extend our sincere gratitude to the developers and communities behind these incredible tools.
+This project was developed with the generous support of a number of open-source frameworks, libraries, and educational resources. I extend my sincere gratitude to the developers and communities behind these incredible tools.
 
 ### Frameworks & Libraries
 
